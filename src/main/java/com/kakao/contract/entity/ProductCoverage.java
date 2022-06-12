@@ -31,8 +31,7 @@ public class ProductCoverage {
     private Product product;
 
     @Builder
-    public ProductCoverage(Product product, String coverageName, BigDecimal entryAmount, BigDecimal basePremium){
-        this.product = product;
+    public ProductCoverage(String coverageName, BigDecimal entryAmount, BigDecimal basePremium){
         this.coverageName = coverageName;
         this.entryAmount = entryAmount;
         this.basePremium = basePremium;

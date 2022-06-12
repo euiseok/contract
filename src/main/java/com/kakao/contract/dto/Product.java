@@ -7,8 +7,5 @@ public class Product {
 
     private String prodName;
 
-    private
 
-
-    public Product to
 }

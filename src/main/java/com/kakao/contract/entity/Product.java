@@ -35,6 +35,13 @@ public class Product {
     @Column(name = "update_at", nullable = false)
     private LocalDateTime updateAt;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<ProductCoverage> productCoverages = new ArrayList<>();
+    public void addProductCoverage(ProductCoverage productCoverage){
+        productCoverages.add(productCoverage);
+        productCoverage.setProduct(this);
+    }
+
     @Builder
     public Product(String productName, int period){
         this.productName = productName;

@@ -19,13 +19,13 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "prod_id", updatable = false)
-    private long prodId;
+    private Long prodId;
 
-    @Column(name = "product_name", nullable = false)
+    @Column(name = "prod_nm", nullable = false)
     private String productName;
 
-    @Column(name = "period", nullable = false)
-    private int period;
+    @Column(name = "ins_prd", nullable = false)
+    private Integer insurancePeriod;
 
     @CreationTimestamp
     @Column(name = "create_at", nullable = false, updatable = false)
@@ -38,13 +38,13 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<ProductCoverage> productCoverages = new ArrayList<>();
     public void addProductCoverage(ProductCoverage productCoverage){
-        productCoverages.add(productCoverage);
         productCoverage.setProduct(this);
+        productCoverages.add(productCoverage);
     }
 
     @Builder
-    public Product(String productName, int period){
+    public Product(String productName, int insurancePeriod){
         this.productName = productName;
-        this.period = period;
+        this.insurancePeriod = insurancePeriod;
     }
 }

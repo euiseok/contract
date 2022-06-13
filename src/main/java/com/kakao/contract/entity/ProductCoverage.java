@@ -16,13 +16,13 @@ public class ProductCoverage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "coverage_name", nullable = false)
+    @Column(name = "cov_nm", nullable = false)
     private String coverageName;
 
-    @Column(name = "entry_amount")
+    @Column(name = "ent_amt")
     private BigDecimal entryAmount;
 
-    @Column(name = "base_premium")
+    @Column(name = "bas_prm")
     private BigDecimal basePremium;
 
     @ManyToOne

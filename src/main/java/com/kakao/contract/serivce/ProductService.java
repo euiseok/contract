@@ -1,6 +1,7 @@
 package com.kakao.contract.serivce;
 
 import com.kakao.contract.entity.Product;
+import com.kakao.contract.exception.EntityNotFoundException;
 import com.kakao.contract.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class ProductService {
     public boolean isValidPeriod(final Long prodId, final Long period) {
 
         Optional<Product> product = productRepository.findById(prodId);
-        product.orElseThrow(() -> new RuntimeException("상품정보가 존재하지 않습니다. " + prodId));
+        product.orElseThrow(() -> new EntityNotFoundException("상품정보가 존재하지 않습니다. " + prodId));
         return period <= product.get().getInsurancePeriod() && period > 0;
     }
 

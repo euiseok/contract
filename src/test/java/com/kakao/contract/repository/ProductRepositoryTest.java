@@ -1,37 +1,41 @@
 package com.kakao.contract.repository;
 
+import com.kakao.contract.model.Coverage;
 import com.kakao.contract.entity.Product;
 import com.kakao.contract.entity.ProductCoverage;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import javax.transaction.Transactional;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.math.BigDecimal;
 
 
-@Transactional
-@SpringBootTest
+@DataJpaTest
 public class ProductRepositoryTest {
 
     @Autowired
     private ProductRepository productRepository;
 
     @Test
+    @DisplayName("product save")
     public void testCreateProduct(){
 
-        Product product = new Product("핸드폰보험",12);
-        product.addProductCoverage(new ProductCoverage("담보1", new BigDecimal(100000), new BigDecimal(200)));
-        product.addProductCoverage(new ProductCoverage("담보2", new BigDecimal(175000), new BigDecimal(230)));
+        // given
+        Product product = new Product("여행자 보험",3L);
+        product.addProductCoverage(new ProductCoverage(new Coverage("상해치료비", new BigDecimal(1000000), new BigDecimal(100))));
+        product.addProductCoverage(new ProductCoverage(new Coverage("항공기 지연도착시 보상금", new BigDecimal(500000), new BigDecimal(100))));
 
-        productRepository.save(product);
+        // when
+        Product saveProduct = productRepository.save(product);
 
-        System.out.println(">>>>>>>>>>" + productRepository.findAll());
+        // then
+        System.out.println(">>>" + product);
+        System.out.println(">>>" + saveProduct);
+        Assertions.assertEquals(product, saveProduct);
+        Assertions.assertNotNull(saveProduct.getProdId());
+        Assertions.assertTrue(productRepository.count()==1);
 
     }
-
-
 
 }

@@ -1,19 +1,18 @@
 package com.kakao.contract.entity;
 
+import com.kakao.contract.model.Coverage;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "product")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Data
+@ToString
+@EqualsAndHashCode(exclude = {"prodId", "insurancePeriod", "productCoverages"})
 public class Product {
 
     @Id
@@ -25,26 +24,33 @@ public class Product {
     private String productName;
 
     @Column(name = "ins_prd", nullable = false)
-    private Integer insurancePeriod;
-
-    @CreationTimestamp
-    @Column(name = "create_at", nullable = false, updatable = false)
-    private LocalDateTime createAt;
-
-    @UpdateTimestamp
-    @Column(name = "update_at", nullable = false)
-    private LocalDateTime updateAt;
+    private Long insurancePeriod;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductCoverage> productCoverages = new ArrayList<>();
+    private Set<ProductCoverage> productCoverages = new HashSet<>();
+
     public void addProductCoverage(ProductCoverage productCoverage){
         productCoverage.setProduct(this);
         productCoverages.add(productCoverage);
     }
 
+    public void deleteProductCoverage(ProductCoverage productCoverage){
+        productCoverage.setProduct(null);
+        productCoverages.remove(productCoverage);
+    }
+
     @Builder
-    public Product(String productName, int insurancePeriod){
+    public Product(String productName, Long insurancePeriod){
         this.productName = productName;
         this.insurancePeriod = insurancePeriod;
+    }
+
+    @SneakyThrows(CloneNotSupportedException.class)
+    public Set<Coverage> getCoverage() {
+        final Set<Coverage> coverages = new HashSet<>();
+        for(ProductCoverage productCoverage : productCoverages){
+            coverages.add(productCoverage.getCoverage().clone());
+        }
+        return coverages;
     }
 }

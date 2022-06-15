@@ -1,15 +1,16 @@
 package com.kakao.contract.entity;
 
+import com.kakao.contract.model.Coverage;
 import lombok.*;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "contract_coverage")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Data
+@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded=true)
 public class ContractCoverage {
 
     @Id
@@ -17,24 +18,18 @@ public class ContractCoverage {
     @Column(name = "cov_id")
     private Long id;
 
-    @Column(name = "cov_nm")
-    private String coverageName;
-
-    @Column(name = "ent_amt")
-    private BigDecimal entryAmount;
-
-    @Column(name = "bas_prm")
-    private BigDecimal basePremium;
+    @Embedded
+    @EqualsAndHashCode.Include
+    private Coverage coverage;
 
     @ManyToOne
     @JoinColumn(name = "ctr_id", updatable = false)
     @ToString.Exclude
+    @Setter
     private Contract contract;
 
-    public ContractCoverage(ProductCoverage productCoverage){
-        this.coverageName = productCoverage.getCoverageName();
-        this.entryAmount = productCoverage.getEntryAmount();
-        this.basePremium = productCoverage.getBasePremium();
+    public ContractCoverage(Coverage coverage){
+        this.coverage = coverage;
     }
 
 }

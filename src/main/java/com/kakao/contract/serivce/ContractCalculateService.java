@@ -1,39 +1,36 @@
 package com.kakao.contract.serivce;
 
 import com.kakao.contract.dto.ContractRequest;
-import com.kakao.contract.entity.Contract;
-import com.kakao.contract.entity.Product;
-import com.kakao.contract.entity.ProductCoverage;
-import com.kakao.contract.repository.ContractRepository;
+import com.kakao.contract.exception.BusinessException;
+import com.kakao.contract.exception.ErrorCode;
+import com.kakao.contract.model.Coverage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class ContractCalculateService {
 
-    private final ContractRepository contractRepository;
-
     private final ProductService productService;
 
-
-    public BigDecimal calculateContract(Product product, ContractRequest contractRequest){
+    public BigDecimal calculateContract(final ContractRequest contractRequest) {
 
         //상품에 맞는 보험기간
-        if(!productService.isValidPeriod(product.getProdId(), contractRequest.getPeriod())){
-            throw new RuntimeException("상품에서 허용하지 않는 보험기간입니다." + contractRequest.getPeriod());
+        if(!productService.isValidPeriod(contractRequest.getProductId(), contractRequest.getPeriod())){
+            throw new BusinessException(ErrorCode.INVALID_INSURANCE_PERIOD);
         }
 
         BigDecimal expectPremium = BigDecimal.ZERO;
 
-        for(ProductCoverage productCoverage : product.getProductCoverages()){
-            expectPremium.add(productCoverage.getEntryAmount().divide(productCoverage.getBasePremium(), 3, BigDecimal.ROUND_DOWN));
+        for(Coverage coverage : contractRequest.getCoverages()){
+            expectPremium = expectPremium.add(coverage.getEntryAmount().divide(coverage.getBasePremium(), 2, RoundingMode.DOWN));
         }
 
-        return expectPremium.multiply(new BigDecimal(contractRequest.getPeriod()));
+        return expectPremium.multiply(new BigDecimal(contractRequest.getPeriod())).setScale(2, RoundingMode.DOWN);
     }
 }

@@ -1,64 +1,100 @@
 package com.kakao.contract.serivce;
 
 import com.kakao.contract.dto.ContractRequest;
-import com.kakao.contract.entity.Contract;
+import com.kakao.contract.dto.ProductRequest;
+import com.kakao.contract.model.Coverage;
 import com.kakao.contract.entity.Product;
-import com.kakao.contract.entity.ProductCoverage;
-import com.kakao.contract.repository.ContractRepository;
-import com.kakao.contract.repository.ProductRepository;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import javax.transaction.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class ContractCalculateServiceTest {
 
-    @Autowired
+    @Mock
     private ProductService productService;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
+    @InjectMocks
     private ContractCalculateService contractCalculateService;
 
-
-
     @Test
-    public void testMakeContract(){
+    @DisplayName("cell phone protect insurance")
+    public void testCalculateCellPhoneInsurance(){
 
         //given
-        Product product = makeProduct();
+        Product product = makeCellPhoneInsurance();
 
         //when
-        ContractRequest contractRequest = new ContractRequest();
-        contractRequest.setPeriod(10L);
-        contractRequest.setInsuranceStartDate(LocalDate.now());
-
-        BigDecimal expectedPremium = contractCalculateService.calculateContract(product, contractRequest);
+        ContractRequest contractRequest = ContractRequest.builder()
+                                            .insuranceStartDate(LocalDate.now())
+                                            .period(11L)
+                                            .coverages(product.getCoverage())
+                                            .build();
+        BigDecimal expectedPremium = contractCalculateService.calculateContract(contractRequest);
 
         //then
+        //RoundDown((750000/38 + 1570000/40) * 11,2) = 648,855.24
         System.out.println(">>>>>>" + expectedPremium);
-        //assert isValid;
+        Assertions.assertEquals(648855.24, expectedPremium.doubleValue());
     }
 
+    @Test
+    @DisplayName("travel insurance")
+    public void testCalculateTravelInsurance(){
 
+        //given
+        Product product = makeTravelInsurance();
+
+        //when
+        ContractRequest contractRequest = ContractRequest.builder()
+                                            .insuranceStartDate(LocalDate.now())
+                                            .period(2L)
+                                            .coverages(product.getCoverage())
+                                            .build();
+        BigDecimal expectedPremium = contractCalculateService.calculateContract(contractRequest);
+
+        //then
+        //RoundDown((1000000/100) * 2,2) = 20000
+        System.out.println(">>>>>>" + expectedPremium);
+        Assertions.assertEquals(20000, expectedPremium.doubleValue());
+    }
 
     /*
-    상품정보 생성
+    휴대폰 보험 상품정보 생성
      */
-    private Product makeProduct(){
+    private Product makeCellPhoneInsurance(){
 
-        Product product = new Product("여행자 보험",3);
-        product.addProductCoverage(new ProductCoverage("상해치료비", new BigDecimal(1000000), new BigDecimal(100)));
-        product.addProductCoverage(new ProductCoverage("항공기지연도착시보상금", new BigDecimal(500000), new BigDecimal(100)));
+        Set<Coverage> coverageSet = new HashSet<>();
+        coverageSet.add(new Coverage("부분손실", new BigDecimal(750000), new BigDecimal(38)));
+        coverageSet.add(new Coverage("전체손실", new BigDecimal(1570000), new BigDecimal(40)));
+        ProductRequest productRequest = new ProductRequest("휴대폰 보험",12L,coverageSet);
+        Product product = productRequest.toEntity();
+        when(productService.isValidPeriod(any(),any())).thenReturn(true);
+
+        return product;
+    }
+
+    /*
+    여행자 상품정보 생성
+     */
+    private Product makeTravelInsurance(){
+
+        Set<Coverage> coverageSet = new HashSet<>();
+        coverageSet.add(new Coverage("상해치료비", new BigDecimal(1000000), new BigDecimal(100)));
+        ProductRequest productRequest = new ProductRequest("여행자 보험",3L, coverageSet);
+        Product product = productRequest.toEntity();
+        when(productService.isValidPeriod(any(),any())).thenReturn(true);
 
         return product;
     }
